@@ -5,37 +5,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutterapp1/bloc/navigation_bloc/navigation_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-//import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-//import 'package:go';
 
 class MyMap extends StatefulWidget with NavigationStates {
-  Future<Property> fetchProperty;
   @override
-
   _MyMapState createState() => _MyMapState();
-
 }
+
 //GoogleMapController _controller;
 class _MyMapState extends State<MyMap> {
-
   GoogleMapController _controller;
   //Completer<GoogleMapController> _controller = Completer()
   bool isMapCreated = false;
-
-  final LatLng _center = const LatLng(24.7255553,47.1027142);
-
+  final LatLng _center = const LatLng(24.7255553, 47.1027142);
   changeMapMode() {
     getJesonFile("assets/dark.json").then(setMapStyle);
   }
 
-  Future<String> getJesonFile(String path)async {
+  Future<String> getJesonFile(String path) async {
     return await rootBundle.loadString(path);
   }
+
   void setMapStyle(mapStyle) {
     _controller.setMapStyle(mapStyle);
   }
-
   /*void _onMapTypeButtonPressed() {
     setState(() {
       _currentMapType = _currentMapType == MapType.normal
@@ -47,49 +40,66 @@ class _MyMapState extends State<MyMap> {
   Future<List<Property>> getData() async {
     http.Response response = await http.get(
         Uri.encodeFull("http://10.0.2.2:8000/api/propertys"),
-        headers: {
-          "Accept" : "application/json"
-        }
-    );
-    //print(response);
-    //inal data = convert.jsonDecode(response.body);
+        headers: {"Accept": "application/json"});
+    print("responseBody: " + response.body);
     //return Property.fromJson(data);
     var json = convert.jsonDecode(response.body);
     var jsonResult = json['data'] as List;
     return jsonResult.map((data) => data.fromJson(data)).toList();
   }
 
-
   MapType _currentMapType = MapType.normal;
 
   List<Marker> markers = [];
-  void initState(){
+
+  void initState() {
     super.initState();
+    latLangs.forEach((element) {
+      markers.add(
+          Marker(markerId: MarkerId(element.toString()), position: element));
+    });
     markers.add(Marker(
         markerId: MarkerId('myMarker'),
         draggable: false,
         onTap: () {
           print('My Marker');
         },
-        position: LatLng(24.7255553 , 47.1027142)
-    ));
+        position: LatLng(24.7255553, 47.1027142)));
   }
 
+//by amen
+  final List<LatLng> latLangs = [
+    LatLng(25.456647601115794, 47.342224940657616),
+    LatLng(24.914258846373837, 47.58199967443943),
+    LatLng(24.01251035336433, 47.46217802166939),
+    LatLng(23.840881602122618, 46.2835818529129),
+    LatLng(24.903510540971226, 45.95203164964914),
+    LatLng(23.932140365302953, 46.291614063084126),
+    LatLng(25.048412056256403, 45.96401408314705),
+    LatLng(26.03943829865185, 46.691106632351875),
+    LatLng(25.46378078807016, 47.42215007543564),
+    LatLng(24.587816553166014, 47.72183530032635),
+  ];
+
   @override
-
-
   Widget build(BuildContext context) {
-    return  MaterialApp(
+    var data = getData();
+    print(data);
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text('عقارات الصندوق' ,  style: TextStyle(color: Colors.white)),
+          title: Text('عقارات الصندوق', style: TextStyle(color: Colors.white)),
           backgroundColor: Colors.black,
         ),
         body: Stack(
-          children : [
+          children: [
             GoogleMap(
+              onTap: (LatLng latlang) {
+                print(latlang.toString());
+              },
+              onLongPress: (LatLng latLng) {},
               mapType: _currentMapType,
               onMapCreated: (GoogleMapController controller) {
                 controller = _controller;
@@ -102,7 +112,6 @@ class _MyMapState extends State<MyMap> {
                 zoom: 7.0,
               ),
               markers: Set.from(markers),
-
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -116,27 +125,14 @@ class _MyMapState extends State<MyMap> {
                 ),
               ),
             ),
-           FutureBuilder(
-                future: getData(),
-                builder: (context, snapshot){
-                  if(snapshot.hasData){
-                    return new Text(snapshot.data.lat);
-                  }else if(snapshot.hasError){
-                    return new Text("Error ${snapshot.error}");
-                  }
-                }),
-
 
             //_buildContainer()
             //_buildContainer()
-
           ],
         ),
-
       ),
     );
   }
-
 }
 
 /*Widget _googleMap(BuildContext context) {
@@ -249,16 +245,16 @@ class Property {
   final int id;
   final String lat;
   final String lng;
+
   //final String email;
   //final Address address;
 
   Property({this.id, this.lat, this.lng});
 
-  Property.fromJson(Map<dynamic , dynamic> parsedJson)
-      :id = (parsedJson['id'] !=null ) ? parsedJson['id'] : null,
+  Property.fromJson(Map<dynamic, dynamic> parsedJson)
+      : id = (parsedJson['id'] != null) ? parsedJson['id'] : null,
         lng = (parsedJson['lng'] != null) ? parsedJson['lng'] : null,
-        lat = (parsedJson['lat'] != null) ? parsedJson['lat'] : null ;
-      //email: propertyjson["email"],
+        lat = (parsedJson['lat'] != null) ? parsedJson['lat'] : null;
+//email: propertyjson["email"],
 
 }
-
